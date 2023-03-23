@@ -7,11 +7,11 @@ from numpy.linalg import pinv
 from numpy.linalg import det
 from numpy.linalg import cond
 import math
-import pandas as pd
-import torch
-from torch.utils.data import Dataset
-import BPNN
-from BPNN import MLP
+# import pandas as pd
+# import torch
+# from torch.utils.data import Dataset
+# import BPNN
+# from BPNN import MLP
 
 
 n = 3
@@ -22,17 +22,17 @@ waypoint_num = 20
 delta=0.1
 count=0
 
-class MyDataset(Dataset):
-    def __init__(self,X):
-        self.x_data = X
-        self.x_data = self.x_data.astype(np.float32)
-        self.len = self.x_data.shape[0]
+# class MyDataset(Dataset):
+#     def __init__(self,X):
+#         self.x_data = X
+#         self.x_data = self.x_data.astype(np.float32)
+#         self.len = self.x_data.shape[0]
     
-    def __getitem__(self, index):
-        return self.x_data[index]
+#     def __getitem__(self, index):
+#         return self.x_data[index]
 
-    def __len__(self):
-        return self.len
+#     def __len__(self):
+#         return self.len
 
 def simulationPhysicalTrajectoriesExtraction(cfg,index_from,index_to):
     dir = cfg.get('param','root_dir')+'experiment/output/PA/0/'
@@ -196,54 +196,54 @@ def kalmanExtraction(cfg,index_from,index_to):
 
 #     label=False
 #     return True
-def labelTraces_NN(states=None,profiles=None,std=6,filepath=None):
-    labels = []
-    false_id = []
-    states_all=[]
+# def labelTraces_NN(states=None,profiles=None,std=6,filepath=None):
+#     labels = []
+#     false_id = []
+#     states_all=[]
     
-    for states_id,state in enumerate(states):
-        tmp=[]
-        last_profile=[0,0,0]
-        for task_id,task in enumerate(state):
-                # add waypoint infomation
-            if task_id>=12:
-                break
-            tmp.append(profiles[states_id][task_id][0])
-            tmp.append(profiles[states_id][task_id][1])
-            tmp.append(profiles[states_id][task_id][2])
-            if task_id==0:
-                last_profile=task[0]
-            delta_target=(profiles[states_id][task_id]-last_profile)/len(task)
+#     for states_id,state in enumerate(states):
+#         tmp=[]
+#         last_profile=[0,0,0]
+#         for task_id,task in enumerate(state):
+#                 # add waypoint infomation
+#             if task_id>=12:
+#                 break
+#             tmp.append(profiles[states_id][task_id][0])
+#             tmp.append(profiles[states_id][task_id][1])
+#             tmp.append(profiles[states_id][task_id][2])
+#             if task_id==0:
+#                 last_profile=task[0]
+#             delta_target=(profiles[states_id][task_id]-last_profile)/len(task)
 
-            for count,point in enumerate(task):
-                tmp.append(point[0])
-                tmp.append(point[1])
-                tmp.append(point[2])
-                tmp.append(point[0]-(delta_target[0]*count+last_profile[0]))
-                tmp.append(point[1]-(delta_target[1]*count+last_profile[1]))
-                tmp.append(point[2]-(delta_target[2]*count+last_profile[2]))
+#             for count,point in enumerate(task):
+#                 tmp.append(point[0])
+#                 tmp.append(point[1])
+#                 tmp.append(point[2])
+#                 tmp.append(point[0]-(delta_target[0]*count+last_profile[0]))
+#                 tmp.append(point[1]-(delta_target[1]*count+last_profile[1]))
+#                 tmp.append(point[2]-(delta_target[2]*count+last_profile[2]))
             
-            last_profile=profiles[states_id][task_id]
+#             last_profile=profiles[states_id][task_id]
             
                 
-        states_all.append(tmp)
+#         states_all.append(tmp)
 
-    model1=torch.load(filepath)
+#     model1=torch.load(filepath)
     
-    for simulate_id in range(len(states_all)):
-        data=states_all[simulate_id]
-        data=torch.tensor(data)
-        output = model1(data)
-        values,predicted = torch.max(output.data,0)
-        if predicted==0:
-            # true_labels += 1
-            labels.append(0)
-        else:
-            labels.append(1)
-            false_id.append(simulate_id)
+#     for simulate_id in range(len(states_all)):
+#         data=states_all[simulate_id]
+#         data=torch.tensor(data)
+#         output = model1(data)
+#         values,predicted = torch.max(output.data,0)
+#         if predicted==0:
+#             # true_labels += 1
+#             labels.append(0)
+#         else:
+#             labels.append(1)
+#             false_id.append(simulate_id)
         
     
-    return labels,false_id
+#     return labels,false_id
 
 def labelTraces_PA(states=None,profiles=None,std=6):
     true_labels = 0

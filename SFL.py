@@ -1,6 +1,6 @@
 from traceLabel import *
 from injector_copter_3_6_12_V1 import *
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from prepareforBPNN import *
 # import torch
 # import torch.nn as nn
@@ -13,18 +13,13 @@ import math
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-traj_path36_buggy=['/traj/ArduCopter3_6_12 bug0 10000/','/traj/ArduCopter3_6_12 bug1 10000/',
-                   '/traj/ArduCopter3_6_12 bug2 10000/','/traj/ArduCopter3_6_12 bug3 10000/',
-                   '/traj/ArduCopter3_6_12 bug4 10000/','/traj/ArduCopter3_6_12 bug5 10000/',
-                   '/traj/ArduCopter3_6_12 bug6 10000/','/traj/ArduCopter3_6_12 bug7 10000/',
-                   '/traj/ArduCopter3_6_12 bug8 10000/','/traj/ArduCopter3_6_12 bug9 10000/',
-                   '/traj/ArduCopter3_6_12 bug10 10000/','/traj/ArduCopter3_6_12 bug11 10000/',
-                   '/traj/ArduCopter3_6_12 bug12 10000/','/traj/ArduCopter3_6_12 bug13 10000/',
-                   '/traj/ArduCopter3_6_12 bug14 10000/']
+#traj_path36_buggy=['/traj/ArduCopter3_6_12 realife single bug6 10000/']
 # traj_path36_buggy=['/traj/ArduCopter3_6_12 multi bug5_8_10_12_13 10000/']
+traj_3bug=['/traj/ArduCopter3_6_12 multi bug3_4_6 10000/']
 
-bug_list=[[0],[1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12],[13],[14]]
-multi_bug_list=[[5, 8, 10, 12, 13]]
+# bug_list=[[6]]
+# multi_bug_list=[[5, 8, 10, 12, 13]]
+bug3_list=[[3,4,6]]
 
 def statics(bug_id_list,group,cfg):
     all_lines = set()
@@ -331,22 +326,23 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
         group = bug_group
     #print(bug_id_list)
     
-    if ind>=10:
-        start = 2100000 + ind%10 * 10000
-        end = 2100999 + ind%10 * 10000
-    else:
-        start = 2000000 + ind * 10000
-        end = 2000999 + ind * 10000
+    # if ind>=10:
+    #     start = 2100000 + ind%10 * 10000
+    #     end = 2100999 + ind%10 * 10000
+    # else:
+    #     start = 2000000 + ind * 10000
+    #     end = 2000999 + ind * 10000
 
-    # start=3010000
-    # end=3010999
-    print("in "+ traj_path36_buggy[ind] )
-    record_path = '/home/ubuntu/workspace/3.6.12/ardupilot' + traj_path36_buggy[ind]
+    start=4080000
+    end=4080999
+
+    print("in "+ traj_3bug[ind] )
+    record_path = cfg.get('param','root_dir') + traj_3bug[ind]
 
     
     # bug_id_list=multi_bug_list[ind]
-    bug_id_list=bug_list[ind]
-
+    bug_id_list=bug3_list[ind]
+    print(bug_id_list)
     
     all_lines = statics(bug_id_list,group,cfg)
     
@@ -560,14 +556,15 @@ if __name__ == '__main__':
     config = parserConfig()
     # mainRecord(config,7.0)
     # exit(0)
-    for id in range(9,10):
-        print('id = '+ str(id))
-        for std in np.arange(4.0,8.5,1):
-            output_f1 = open('log/arti_1_' + '_ARSI_'+str(id) + '_' + str(std) +'.log','w')
-            output_f2 = open('log/arti_1_' + '_HO_'+ str(id) + '_' + str(std) +'.log','w')
-            # output_f3 = open('arti_1_' + str(std) + '_NNType1_'+str(id)+'.log','w')
-            # output_f4 = open('arti_1_' + str(std) + '_NNType2_'+str(id)+'.log','w')
-            # output_f5 = open('arti_1_' + str(std) + '_NNType3_'+str(id)+'.log','w')
-            mainRecord(config,std,id)
-    
-        
+    # for id in range(0,3):
+    #     print('id = '+ str(id))
+    id=0
+    for std in np.arange(4.0,8.5,1):
+        output_f1 = open('arti_3_ARSI_' + str(std) +'_'+str(id)+'.log','w')
+        output_f2 = open('arti_3_HO_' + str(std) +str(id)+'.log','w')
+        # output_f1 = open('log/arti_3_ARSI_' + str(std) +'_'+str(id)+'.log','w')
+        # output_f2 = open('log/arti_3_HO_' + str(std) +str(id)+'.log','w')
+        # output_f3 = open('arti_1_' + str(std) + '_NNType1_'+str(id)+'.log','w')
+        # output_f4 = open('arti_1_' + str(std) + '_NNType2_'+str(id)+'.log','w')
+        # output_f5 = open('arti_1_' + str(std) + '_NNType3_'+str(id)+'.log','w')
+        mainRecord(config,std,id)

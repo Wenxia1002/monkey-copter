@@ -5,7 +5,7 @@ from tokenize import group
 from cv2 import trace
 from traceLabel import *
 from injector_copter_3_6_12_V1 import *
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 # import torch
 # import torch.nn as nn
 # import torchvision
@@ -86,6 +86,7 @@ def process_all_server(index_from,index_to,record_path,bug_id_list,is_nonbuggy=0
     traces = []
     for record_file in record_files:
         path=record_path+record_file
+        # dir=record_path+'/output/PA/0/'
         dir=path+'/experiment/output/PA/0/'
         if is_nonbuggy:
             index_from+=(count*10000)
@@ -96,11 +97,17 @@ def process_all_server(index_from,index_to,record_path,bug_id_list,is_nonbuggy=0
         else:
             index_from+=(count*1000)
             index_to+=(count*1000)
+        count=1
         print("processing "+record_file+"...")
+        
         for simulation_id in range(index_from, index_to+1): 
         # simulation_id was called "simulate_id" in the old source code, 
         # standardized by Qixin Wang on 27/4/2022.
-            trajectory = np.load(dir + 'states_np_%d_0.npy' % simulation_id,allow_pickle=True) 
+            # if record_file.startswith('server4'):
+            #     id=simulation_id-10000
+            # else:
+            id=simulation_id
+            trajectory = np.load(dir + 'states_np_%d_0.npy' % id,allow_pickle=True) 
             # trajectory was called "state" in the old source code, 
             # standardized by Qixin Wang on 27/4/2022.
             simplified_trajectory = []
@@ -108,12 +115,12 @@ def process_all_server(index_from,index_to,record_path,bug_id_list,is_nonbuggy=0
             for trajectory_segment in trajectory:
                 simplified_trajectory.append([[state[0], state[1], state[2]] for state in trajectory_segment])
                 physical_trajectory.append([[x[3],x[4],x[5],x[6],x[7],x[8]] for x in trajectory_segment])
-            way_point_sequences.append(np.load(dir + 'profiles_np_%d_0.npy' % simulation_id))
+            way_point_sequences.append(np.load(dir + 'profiles_np_%d_0.npy' % id))
             simplified_trajectories.append(simplified_trajectory)
             physical_trajectories.append(physical_trajectory)
 
             current_trace = []
-            with open(dir+'raw_%s_0.txt'%simulation_id) as f:
+            with open(dir+'raw_%s_0.txt'%id) as f:
                 for line in f: ### each line no appears only once
                     for bug_id in bug_id_list:
                         if group[bug_id]['file'] in line:
@@ -130,7 +137,7 @@ def process_all_server(index_from,index_to,record_path,bug_id_list,is_nonbuggy=0
             traces.append(current_trace)
 
             
-        count=1
+        
     return simplified_trajectories,way_point_sequences,physical_trajectories,traces
 
         
