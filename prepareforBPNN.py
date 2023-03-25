@@ -113,7 +113,7 @@ def process_all_server(index_from,index_to,record_path,bug_id_list,is_nonbuggy=0
             simplified_trajectory = []
             physical_trajectory = []
             for trajectory_segment in trajectory:
-                simplified_trajectory.append([[state[0], state[1], state[2]] for state in trajectory_segment])
+                simplified_trajectory.append([state for state in trajectory_segment])
                 physical_trajectory.append([[x[3],x[4],x[5],x[6],x[7],x[8]] for x in trajectory_segment])
             way_point_sequences.append(np.load(dir + 'profiles_np_%d_0.npy' % id))
             simplified_trajectories.append(simplified_trajectory)

@@ -1,3 +1,4 @@
+#-- coding:UTF-8 --
 import imp
 from operator import ne
 from matplotlib.pyplot import flag
@@ -7,6 +8,14 @@ from numpy.linalg import pinv
 from numpy.linalg import det
 from numpy.linalg import cond
 import math
+from TransformerPrediction.Transformer import Transformer as Transformer
+import TransformerPrediction.config as config
+import TransformerPrediction.Translate as Translate
+
+import torch
+import os
+
+import ProcessBar as ProcessBar
 # import pandas as pd
 # import torch
 # from torch.utils.data import Dataset
@@ -456,6 +465,66 @@ def LinearRegressionBasedLabel(state,profile,std=6):
         A_i = np.mat(psi_i)*np.mat(phi_i_inv)
         i += 1
     return True
+
+'''
+state:     [20, 9]
+profile:   [3]
+'''
+def TransformerBasedLabel(state, profile, std = 6):
+    model = Transformer().to(config.device)
+    if os.path.exists(config.model_path):
+        model.load_state_dict('TransformerPrediction/' + torch.load(config.model_path))
+        print("total param num", sum(p.numel() for p in model.parameters() if p.requires_grad))
+
+    state = np.array(state)
+
+    predict_results = Translate.predictTrajectory(torch.Tensor([state]), torch.Tensor([profile]), model)
+    err = []
+    for i in range(len(predict_results)):
+        err.append(state[i + 10][0:6] - predict_results[i]) 
+        if not check_outlier_AR_based(err,std):
+            return False
+    return True
+
+'''
+states: [n, 12, 20, 6]
+profiles:[n, 12, 3]
+'''
+def labelTraces_Transformer(states=None,profiles=None,std=6):
+    true_labels = 0
+    labels = [] # $i$th element is the label for the $i$th simulation (0: "not-buggy"; 1: "buggy").
+    false_id = []
+    for simulate_id, state in enumerate(states): # $state$ is in fact a trajectory.
+        ProcessBar.progress_bar(simulate_id,len(states))
+        profile = profiles[simulate_id] # $profile$ is in fact a way point sequence.
+        '''
+        state: [12, 20, 6]
+        profile: [12, 3]
+        '''
+        label = True
+        for mission_id in range(0,len(profile)): # $mission_id$ is in fact way point id, not the mission id.
+            if mission_id % 3 == 0: # NOTE: all the simulations are assumed to be run in the Guided mode!
+                continue
+            state_temp = state[mission_id] # $state_temp$ is in fact a trajectory segment, corresponding to the $mission_id$th way point.
+            # by default, there should be 20 elements in the trajectory segment.
+            if len(state_temp) > 60:
+                state_temp = state_temp[:80:4]
+            elif len(state_temp) > 20:
+                state_temp = state_temp[:40:2]
+            profile_temp = profile[mission_id][:AR_dimension] # here we only focus on lat, lon, alt, profile_temp is in fact [lat, lon, alt] of the
+                                                              # $mission_id$th way point.
+            if not TransformerBasedLabel(state_temp, profile_temp, std=std):
+                label = False
+                break
+        if label:
+            true_labels += 1 # $true_labels$ is in fact the count of not-buggy simulations.
+            labels.append(0)
+        else:
+            labels.append(1)
+            false_id.append(simulate_id) # $false_id$ is in fact $buggy simulation id$.
+    print('total traces:%d'%len(states))
+    print('positive labels:%d'%(len(states) - true_labels)) # "positive labels" in fact means "number of buggy labels"
+    return labels, false_id
 
 
 if __name__ == '__main__':

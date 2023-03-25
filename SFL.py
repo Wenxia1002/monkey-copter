@@ -15,11 +15,21 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 #traj_path36_buggy=['/traj/ArduCopter3_6_12 realife single bug6 10000/']
 # traj_path36_buggy=['/traj/ArduCopter3_6_12 multi bug5_8_10_12_13 10000/']
-traj_3bug=['/traj/ArduCopter3_6_12 multi bug3_4_6 10000/']
+traj_3bug=['/traj/ArduCopter3_6_12 bug0 10000/',
+            '/traj/ArduCopter3_6_12 bug1 10000/',
+            '/traj/ArduCopter3_6_12 bug2 10000/',
+            '/traj/ArduCopter3_6_12 bug3 10000/',
+            '/traj/ArduCopter3_6_12 bug4 10000/',
+            '/traj/ArduCopter3_6_12 bug5 10000/',
+            '/traj/ArduCopter3_6_12 bug6 10000/',
+            '/traj/ArduCopter3_6_12 bug7 10000/',
+            '/traj/ArduCopter3_6_12 bug8 10000/',
+            '/traj/ArduCopter3_6_12 bug9 10000/',
+            '/traj/ArduCopter3_6_12 bug10 10000/']
 
 # bug_list=[[6]]
 # multi_bug_list=[[5, 8, 10, 12, 13]]
-bug3_list=[[3,4,6]]
+bug3_list=[[0],[1],[2],[3],[4],[5],[6],[7],[8],[9],[10]]
 
 def statics(bug_id_list,group,cfg):
     all_lines = set()
@@ -326,15 +336,15 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
         group = bug_group
     #print(bug_id_list)
     
-    # if ind>=10:
-    #     start = 2100000 + ind%10 * 10000
-    #     end = 2100999 + ind%10 * 10000
-    # else:
-    #     start = 2000000 + ind * 10000
-    #     end = 2000999 + ind * 10000
+    if ind>=10:
+        start = 2000000 + ind%10 * 10000
+        end = 2000999 + ind%10 * 10000
+    else:
+        start = 2000000 + ind * 10000
+        end = 2000999 + ind * 10000
 
-    start=4080000
-    end=4080999
+    # start=2000000
+    # end=2000999
 
     print("in "+ traj_3bug[ind] )
     record_path = cfg.get('param','root_dir') + traj_3bug[ind]
@@ -357,8 +367,9 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     # type3='/home/ubuntu/workspace/3.6.12/ardupilot/monkey-copter/bpnn_HO_36_6000.pt'
     # physical_trajectories,reference_trajectories = simulationPhysicalTrajectoriesExtraction(cfg,start,end-1)
     # physical_trajectories_HA = simulationPhysicalTrajectoriesExtractionHA(cfg,start,end - 1)
-    labels1,positive1 = labelTraces_PA(states,profiles,std)
-    labels2,positive2 = labelTraces_HR(states2,profiles,std)
+    # labels1,positive1 = labelTraces_PA(states,profiles,std)
+    labels1,positive1 = labelTraces_Transformer(states,profiles,std)
+    # labels2,positive2 = labelTraces_HR(states2,profiles,std)
     # labels3,positive3 = labelTraces_NN(physical_trajectories,reference_trajectories,std,type1)
     # labels4,positive4 = labelTraces_NN(physical_trajectories,reference_trajectories,std,type2)
     # labels5,positive5 = labelTraces_NN(physical_trajectories,reference_trajectories,std,type3)
@@ -385,11 +396,11 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     for id in positive1:
         if id in negative_id:
             false_positive1 += 1
-    false_positive2 = 0
-    for id in positive2:
-        if id in negative_id:
-            false_positive2 += 1
-    false_positive3 = 0
+    # false_positive2 = 0
+    # for id in positive2:
+    #     if id in negative_id:
+    #         false_positive2 += 1
+    # false_positive3 = 0
     # for id in positive3:
     #     if id in negative_id:
     #         false_positive3 += 1
@@ -405,10 +416,10 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     for i in range(0,len(traces)):
         if i not in positive1 and i in positive_id:
             false_negative1 += 1
-    false_negative2 = 0
-    for i in range(0,len(traces)):
-        if i not in positive2 and i in positive_id:
-            false_negative2 += 1
+    # false_negative2 = 0
+    # for i in range(0,len(traces)):
+    #     if i not in positive2 and i in positive_id:
+    #         false_negative2 += 1
     # false_negative3 = 0
     # for i in range(0,len(traces)):
     #     if i not in positive3 and i in positive_id:
@@ -428,8 +439,8 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     output_f1.write('FALSE POSITIVE: %d\n'%false_positive1)
     output_f1.write('FALSE NEGATIVE: %d\n'%false_negative1)
 
-    output_f2.write('FALSE POSITIVE: %d\n'%false_positive2)
-    output_f2.write('FALSE NEGATIVE: %d\n'%false_negative2)
+    # output_f2.write('FALSE POSITIVE: %d\n'%false_positive2)
+    # output_f2.write('FALSE NEGATIVE: %d\n'%false_negative2)
 
     # output_f3.write('FALSE POSITIVE: %d\n'%false_positive3)
     # output_f3.write('FALSE NEGATIVE: %d\n'%false_negative3)
@@ -443,8 +454,8 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     if len(negative_id) != 0:
         print('false positive rate1 : %f'%(float(false_positive1)/len(negative_id)))
         output_f1.write('fpr1 : %f\n'%(float(false_positive1)/len(negative_id)))
-        print('false positive rate2 : %f'%(float(false_positive2)/len(negative_id)))
-        output_f2.write('fpr2 : %f\n'%(float(false_positive2)/len(negative_id)))
+        # print('false positive rate2 : %f'%(float(false_positive2)/len(negative_id)))
+        # output_f2.write('fpr2 : %f\n'%(float(false_positive2)/len(negative_id)))
         # print('false positive rate3 : %f'%(float(false_positive3)/len(negative_id)))
         # output_f3.write('fpr3 : %f\n'%(float(false_positive3)/len(negative_id)))
         # print('false positive rate4 : %f'%(float(false_positive4)/len(negative_id)))
@@ -454,8 +465,8 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     else:
         print('false positive rate1 : None')
         output_f1.write('fpr1 : None\n')
-        print('false positive rate2 : None')
-        output_f2.write('fpr2 : None\n')
+        # print('false positive rate2 : None')
+        # output_f2.write('fpr2 : None\n')
         # print('false positive rate3 : None')
         # output_f3.write('fpr3 : None\n')
         # print('false positive rate4 : None')
@@ -465,8 +476,8 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     if len(positive_id) != 0:
         print('false negative rate1 : %f'%(float(false_negative1)/len(positive_id)))
         output_f1.write('fnr1 : %f\n'%(float(false_negative1)/len(positive_id)))
-        print('false negative rate2 : %f'%(float(false_negative2)/len(positive_id)))
-        output_f2.write('fnr2 : %f\n'%(float(false_negative2)/len(positive_id)))
+        # print('false negative rate2 : %f'%(float(false_negative2)/len(positive_id)))
+        # output_f2.write('fnr2 : %f\n'%(float(false_negative2)/len(positive_id)))
         # print('false negative rate3 : %f'%(float(false_negative3)/len(positive_id)))
         # output_f3.write('fnr3 : %f\n'%(float(false_negative3)/len(positive_id)))
         # print('false negative rate4 : %f'%(float(false_negative4)/len(positive_id)))
@@ -476,8 +487,8 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     else:
         print('false negative rate1 : None')
         output_f1.write('fnr1 : None\n')
-        print('false negative rate2 : None')
-        output_f2.write('fnr2 : None\n')
+        # print('false negative rate2 : None')
+        # output_f2.write('fnr2 : None\n')
         # print('false negative rate3 : None')
         # output_f3.write('fnr3 : None\n')
         # print('false negative rate4 : None')
@@ -486,12 +497,12 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
         # output_f5.write('fnr5 : None\n')
 
     sus_tar1 = tarantula(all_lines,traces,labels1)
-    sus_tar2 = tarantula(all_lines,traces,labels2)
+    # sus_tar2 = tarantula(all_lines,traces,labels2)
     # sus_tar3 = tarantula(all_lines,traces,labels3)
     # sus_tar4 = tarantula(all_lines,traces,labels4)
     # sus_tar5= tarantula(all_lines,traces,labels5)
     sus_cro1 = crosstab(all_lines,traces,labels1)
-    sus_cro2 = crosstab(all_lines,traces,labels2)
+    # sus_cro2 = crosstab(all_lines,traces,labels2)
     # sus_cro3 = crosstab(all_lines,traces,labels3)
     # sus_cro4 = crosstab(all_lines,traces,labels4)
     # sus_cro5 = crosstab(all_lines,traces,labels5)
@@ -502,7 +513,7 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
     # sus_cro1 = Ochiai(all_lines,traces,labels1)
     # sus_cro2 = Ochiai(all_lines,traces,labels2)
     sus_bp1 = Ochiai2(all_lines,traces,labels1)
-    sus_bp2 = Ochiai2(all_lines,traces,labels2)
+    # sus_bp2 = Ochiai2(all_lines,traces,labels2)
     # sus_bp3 = Ochiai2(all_lines,traces,labels3)
     # sus_bp4 = Ochiai2(all_lines,traces,labels4)
     # sus_bp5 = Ochiai2(all_lines,traces,labels5)
@@ -515,12 +526,12 @@ def analysis(cfg,bug_id_list,output_f1,output_f2,std,start,end,ind):
         lines.append(temps)
     print(lines)
     sus_analysis(lines,[sus_tar1,sus_cro1,sus_bp1],output_f1)
-    sus_analysis(lines,[sus_tar2,sus_cro2,sus_bp2],output_f2)
+    # sus_analysis(lines,[sus_tar2,sus_cro2,sus_bp2],output_f2)
     # sus_analysis(lines,[sus_tar3,sus_cro3,sus_bp3],output_f3)
     # sus_analysis(lines,[sus_tar4,sus_cro4,sus_bp4],output_f4)
     # sus_analysis(lines,[sus_tar5,sus_cro5,sus_bp5],output_f5)
     output_f1.write(str(len(all_lines))+'\n')
-    output_f2.write(str(len(all_lines))+'\n')
+    # output_f2.write(str(len(all_lines))+'\n')
     # output_f3.write(str(len(all_lines))+'\n')
     # output_f4.write(str(len(all_lines))+'\n')
     # output_f5.write(str(len(all_lines))+'\n')
@@ -559,12 +570,8 @@ if __name__ == '__main__':
     # for id in range(0,3):
     #     print('id = '+ str(id))
     id=0
-    for std in np.arange(4.0,8.5,1):
-        output_f1 = open('arti_3_ARSI_' + str(std) +'_'+str(id)+'.log','w')
-        output_f2 = open('arti_3_HO_' + str(std) +str(id)+'.log','w')
-        # output_f1 = open('log/arti_3_ARSI_' + str(std) +'_'+str(id)+'.log','w')
-        # output_f2 = open('log/arti_3_HO_' + str(std) +str(id)+'.log','w')
-        # output_f3 = open('arti_1_' + str(std) + '_NNType1_'+str(id)+'.log','w')
-        # output_f4 = open('arti_1_' + str(std) + '_NNType2_'+str(id)+'.log','w')
-        # output_f5 = open('arti_1_' + str(std) + '_NNType3_'+str(id)+'.log','w')
-        mainRecord(config,std,id)
+    for id in range(0,10,1):
+        for std in np.arange(4.0,8.5,1):
+            output_f1 = open('log/arti_Trans_BUGID_'+str(id)+'_STD_' + str(std)+'.log','w')
+            output_f2 = open('log/arti_HO_BUGID_'+str(id)+'_STD_' + str(std)+'.log','w')
+            mainRecord(config,std,id)

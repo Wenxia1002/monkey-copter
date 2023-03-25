@@ -120,3 +120,6 @@ __pychache__/
 /experiment/*
 
 *.log1
+/TransformerPrediction/data/*
+*.pyc
+*.Zone.Identifier
